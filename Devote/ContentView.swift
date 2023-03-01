@@ -71,6 +71,8 @@ struct ContentView: View {
                         
                         Button {
                             isDarkMode.toggle()
+                            playSound(sound: "sound-tap", type: "mp3")
+                            feedback.notificationOccurred(.success)
                         } label: {
                             Image(systemName: isDarkMode ? "moon.circle.fill" : "moon.circle")
                                 .resizable()
@@ -88,6 +90,8 @@ struct ContentView: View {
                     
                     Button {
                         showNewTaskItem = true
+                        playSound(sound: "sound-ding", type: "mp3")
+                        feedback.notificationOccurred(.success)
                     } label: {
                         Image(systemName: "plus.circle")
                             .font(.system(size: 30, weight: .semibold, design: .rounded))
@@ -105,26 +109,33 @@ struct ContentView: View {
 
                     
                     //MARK: - TASKS
-                    
-                    List {
-                        ForEach(items) { item in
-                            ListRowItemView(item: item)
+                    if items.count == 0 {
+                        Spacer()
+                    } else {
+                        List {
+                            ForEach(items) { item in
+                                ListRowItemView(item: item)
+                            }
+                            .onDelete(perform: deleteItems)
                         }
-                        .onDelete(perform: deleteItems)
+                        .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.3), radius: 12)
+                        .padding(.vertical, 0)
+                        .frame(maxWidth: 640)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
                     }
-                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.3), radius: 12)
-                    .padding(.vertical, 0)
-                    .frame(maxWidth: 640)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.clear)
-                    
                     
                 } //: VSTACK
+                .blur(radius: showNewTaskItem ? 8.0 : 0, opaque: false)
+                .transition(.move(edge: .bottom))
+                .animation(.easeOut(duration: 0.5))
                 
                 //MARK: - NEW TASK ITEM
                 
                 if showNewTaskItem {
-                    BlankView()
+                    BlankView(
+                        backgroundColor: isDarkMode ? .black : .gray,
+                        backgroundOpacity: isDarkMode ? 0.3 : 0.5)
                         .onTapGesture {
                             withAnimation() {
                                 showNewTaskItem = false
@@ -139,6 +150,7 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .background(
             BackgroundImageView()
+                .blur(radius: showNewTaskItem ? 8.0 : 0, opaque: false)
             )
             .background(backgroundGradient.ignoresSafeArea(.all))
         } //: NAVVIEW
